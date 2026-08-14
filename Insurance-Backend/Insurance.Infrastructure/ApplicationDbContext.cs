@@ -29,12 +29,16 @@ public class ApplicationDbContext : DbContext
         {
             b.HasKey(x => x.Id);
             b.Property(x => x.PolicyNumber).IsRequired();
+            // Ensure decimal precision for money fields
+            b.Property(x => x.Premium).HasPrecision(18,2);
         });
 
         modelBuilder.Entity<Claim>(b =>
         {
             b.HasKey(x => x.Id);
             b.Property(x => x.ClaimNumber).IsRequired();
+            // Ensure decimal precision for money fields
+            b.Property(x => x.Amount).HasPrecision(18,2);
         });
     }
 }

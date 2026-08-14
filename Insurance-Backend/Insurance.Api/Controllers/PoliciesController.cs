@@ -19,30 +19,44 @@ public class PoliciesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var items = await _db.Policies.ToListAsync();
+        var items = await _db.Policies
+            .Select(p => new Insurance.Api.DTOs.PolicyDto(p.Id, p.PolicyNumber, p.CustomerId, p.StartDate, p.EndDate, p.Premium, p.Status, p.CreatedAt))
+            .ToListAsync();
         return Ok(items);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var item = await _db.Policies.FindAsync(id);
+        var item = await _db.Policies
+            .Where(p => p.Id == id)
+            .Select(p => new Insurance.Api.DTOs.PolicyDto(p.Id, p.PolicyNumber, p.CustomerId, p.StartDate, p.EndDate, p.Premium, p.Status, p.CreatedAt))
+            .FirstOrDefaultAsync();
         if (item == null) return NotFound();
         return Ok(item);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Policy dto)
+    public async Task<IActionResult> Create([FromBody] Insurance.Api.DTOs.CreatePolicyDto dto)
     {
-        dto.Id = Guid.NewGuid();
-        dto.CreatedAt = DateTime.UtcNow;
-        _db.Policies.Add(dto);
+        var entity = new Policy
+        {
+            Id = Guid.NewGuid(),
+            PolicyNumber = dto.PolicyNumber,
+            CustomerId = dto.CustomerId,
+            StartDate = dto.StartDate,
+            EndDate = dto.EndDate,
+            Premium = dto.Premium,
+            CreatedAt = DateTime.UtcNow
+        };
+        _db.Policies.Add(entity);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Get), new { id = dto.Id }, dto);
+        var result = new Insurance.Api.DTOs.PolicyDto(entity.Id, entity.PolicyNumber, entity.CustomerId, entity.StartDate, entity.EndDate, entity.Premium, entity.Status, entity.CreatedAt);
+        return CreatedAtAction(nameof(Get), new { id = entity.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Policy dto)
+    public async Task<IActionResult> Update(Guid id, [FromBody] Insurance.Api.DTOs.UpdatePolicyDto dto)
     {
         var existing = await _db.Policies.FindAsync(id);
         if (existing == null) return NotFound();

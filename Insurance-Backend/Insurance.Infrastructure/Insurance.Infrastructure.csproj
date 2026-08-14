@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Insurance.Core\Insurance.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="Seed\**\*.cs" />
+  </ItemGroup>
+
 </Project>

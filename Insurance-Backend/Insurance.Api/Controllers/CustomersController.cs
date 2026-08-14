@@ -19,30 +19,44 @@ public class CustomersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var items = await _db.Customers.ToListAsync();
+        var items = await _db.Customers
+            .Select(c => new Insurance.Api.DTOs.CustomerDto(c.Id, c.FirstName, c.LastName, c.Email, c.Phone, c.DateOfBirth, c.CreatedAt))
+            .ToListAsync();
         return Ok(items);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var item = await _db.Customers.FindAsync(id);
+        var item = await _db.Customers
+            .Where(c => c.Id == id)
+            .Select(c => new Insurance.Api.DTOs.CustomerDto(c.Id, c.FirstName, c.LastName, c.Email, c.Phone, c.DateOfBirth, c.CreatedAt))
+            .FirstOrDefaultAsync();
         if (item == null) return NotFound();
         return Ok(item);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Customer dto)
+    public async Task<IActionResult> Create([FromBody] Insurance.Api.DTOs.CreateCustomerDto dto)
     {
-        dto.Id = Guid.NewGuid();
-        dto.CreatedAt = DateTime.UtcNow;
-        _db.Customers.Add(dto);
+        var entity = new Customer
+        {
+            Id = Guid.NewGuid(),
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            Email = dto.Email,
+            Phone = dto.Phone,
+            DateOfBirth = dto.DateOfBirth,
+            CreatedAt = DateTime.UtcNow
+        };
+        _db.Customers.Add(entity);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Get), new { id = dto.Id }, dto);
+        var result = new Insurance.Api.DTOs.CustomerDto(entity.Id, entity.FirstName, entity.LastName, entity.Email, entity.Phone, entity.DateOfBirth, entity.CreatedAt);
+        return CreatedAtAction(nameof(Get), new { id = entity.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Customer dto)
+    public async Task<IActionResult> Update(Guid id, [FromBody] Insurance.Api.DTOs.UpdateCustomerDto dto)
     {
         var existing = await _db.Customers.FindAsync(id);
         if (existing == null) return NotFound();
@@ -50,6 +64,7 @@ public class CustomersController : ControllerBase
         existing.LastName = dto.LastName;
         existing.Email = dto.Email;
         existing.Phone = dto.Phone;
+        existing.DateOfBirth = dto.DateOfBirth;
         await _db.SaveChangesAsync();
         return NoContent();
     }
