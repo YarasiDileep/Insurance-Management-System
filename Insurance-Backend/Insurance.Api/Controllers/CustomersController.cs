@@ -17,6 +17,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var items = await _db.Customers
@@ -26,6 +27,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> Get(Guid id)
     {
         var item = await _db.Customers
@@ -37,6 +39,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpPost]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> Create([FromBody] Insurance.Api.DTOs.CreateCustomerDto dto)
     {
         var entity = new Customer
@@ -56,6 +59,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> Update(Guid id, [FromBody] Insurance.Api.DTOs.UpdateCustomerDto dto)
     {
         var existing = await _db.Customers.FindAsync(id);
@@ -70,6 +74,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var existing = await _db.Customers.FindAsync(id);
