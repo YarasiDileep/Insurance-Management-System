@@ -1,4 +1,15 @@
+using Insurance.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Add controllers
+builder.Services.AddControllers();
+
+// Database & EF Core
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default") ??
+        "Server=(localdb)\\mssqllocaldb;Database=InsuranceDB;Trusted_Connection=True;"));
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

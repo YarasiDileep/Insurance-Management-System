@@ -15,4 +15,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Insurance.Core\Insurance.Core.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,5 +1,7 @@
 <Solution>
-  <Project Path="Insurance.Api/Insurance.Api.csproj" />
-  <Project Path="Insurance.Core/Insurance.Core.csproj" />
-  <Project Path="Insurance.Infrastructure/Insurance.Infrastructure.csproj" />
+  <Folder Name="/Insurance-Backend/">
+    <Project Path="Insurance-Backend/Insurance.Api/Insurance.Api.csproj" />
+    <Project Path="Insurance-Backend/Insurance.Core/Insurance.Core.csproj" />
+    <Project Path="Insurance-Backend/Insurance.Infrastructure/Insurance.Infrastructure.csproj" />
+  </Folder>
 </Solution>
