@@ -1,28 +1,28 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Insurance.Api.Services;
 
-// Simple development authentication service.
-// In a production app replace this with IdentityServer/ASP.NET Identity or an external provider.
+// Adapter service so parts of the app (and tests) can rely on the existing IUserService
+// while we migrate to ASP.NET Identity. In time you can remove this and use UserManager directly.
 public class AuthService : IUserService
 {
-    private readonly List<UserInfo> _users = new()
-    {
-        // Admin user (full privileges)
-        new UserInfo(Guid.Parse("00000000-0000-0000-0000-000000000001"), "admin", new[] { "Admin" }, "admin@example.com"),
-        // Customer user (can file/view own claims; limited in this sample)
-        new UserInfo(Guid.Parse("00000000-0000-0000-0000-000000000002"), "customer", new[] { "Customer" }, "customer@example.com"),
-        // Agent user (can manage policies/claims)
-        new UserInfo(Guid.Parse("00000000-0000-0000-0000-000000000003"), "agent", new[] { "Agent" }, "agent@example.com")
-    };
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public Task<UserInfo?> ValidateCredentialsAsync(string username, string password)
+    public AuthService(UserManager<IdentityUser> userManager)
     {
-        // Development-only: accept password == "Password123!" for both users
-        if (string.IsNullOrWhiteSpace(username) || password != "Password123!")
-            return Task.FromResult<UserInfo?>(null);
+        _userManager = userManager;
+    }
 
-        var user = _users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
-        return Task.FromResult(user);
+    public async Task<UserInfo?> ValidateCredentialsAsync(string username, string password)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null) return null;
+        var ok = await _userManager.CheckPasswordAsync(user, password);
+        if (!ok) return null;
+
+        var roles = await _userManager.GetRolesAsync(user);
+        // Map IdentityUser to the lightweight UserInfo used by the API
+        return new UserInfo(Guid.TryParse(user.Id, out var id) ? id : Guid.NewGuid(), user.UserName ?? username, roles.ToArray(), user.Email ?? string.Empty);
     }
 }

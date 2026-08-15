@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Insurance.Api.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace Insurance.Api.Controllers;
 
@@ -13,16 +14,19 @@ public class AuthController : ControllerBase
 {
     private readonly IUserService _users;
     private readonly IConfiguration _config;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public AuthController(IUserService users, IConfiguration config)
+    public AuthController(IUserService users, IConfiguration config, UserManager<IdentityUser> userManager)
     {
         _users = users;
         _config = config;
+        _userManager = userManager;
     }
 
     [HttpPost("token")]
     public async Task<IActionResult> Token([FromBody] LoginRequest req)
     {
+        // Use the IUserService adapter for backward-compat in tests, which internally uses Identity.
         var user = await _users.ValidateCredentialsAsync(req.Username, req.Password);
         if (user == null) return Unauthorized();
 
