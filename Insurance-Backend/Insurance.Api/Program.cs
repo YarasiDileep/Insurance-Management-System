@@ -10,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add controllers
 builder.Services.AddControllers();
+// register storage and payment services
+builder.Services.AddSingleton<Insurance.Api.Services.IStorageService, Insurance.Api.Services.FileSystemStorageService>();
+builder.Services.AddSingleton<Insurance.Api.Services.IPaymentGateway, Insurance.Api.Services.MockPaymentGateway>();
 
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();

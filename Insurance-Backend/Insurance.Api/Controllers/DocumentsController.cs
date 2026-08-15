@@ -33,17 +33,42 @@ public class DocumentsController : ControllerBase
 
     [HttpPost]
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Agent")]
-    public async Task<IActionResult> Create([FromBody] Insurance.Api.DTOs.CreateDocumentDto dto)
+    public async Task<IActionResult> Create()
     {
+        var form = await Request.ReadFormAsync();
+        var file = form.Files.FirstOrDefault();
+        if (file == null) return BadRequest("No file uploaded");
+
+        var customerIdStr = form["customerId"].FirstOrDefault();
+        Guid customerId = Guid.TryParse(customerIdStr, out var cId) ? cId : Guid.Empty;
+        Guid? policyId = null;
+        var policyIdStr = form["policyId"].FirstOrDefault();
+        if (Guid.TryParse(policyIdStr, out var pId)) policyId = pId;
+
+        // validation: ensure customer exists
+        var customer = await _db.Customers.FindAsync(customerId);
+        if (customer == null) return BadRequest("Customer not found");
+        if (policyId.HasValue)
+        {
+            var policy = await _db.Policies.FindAsync(policyId.Value);
+            if (policy == null) return BadRequest("Policy not found");
+            if (policy.CustomerId != customerId) return BadRequest("Policy does not belong to the customer");
+        }
+
+        // save file via storage service
+        var storage = HttpContext.RequestServices.GetRequiredService<Insurance.Api.Services.IStorageService>();
+        using var stream = file.OpenReadStream();
+        var storagePath = await storage.SaveFileAsync(stream, file.FileName, file.ContentType);
+
         var entity = new Insurance.Core.Entities.Document
         {
             Id = Guid.NewGuid(),
-            CustomerId = dto.CustomerId,
-            PolicyId = dto.PolicyId,
-            FileName = dto.FileName,
-            ContentType = dto.ContentType,
-            Size = dto.Size,
-            StoragePath = dto.StoragePath,
+            CustomerId = customerId,
+            PolicyId = policyId,
+            FileName = file.FileName,
+            ContentType = file.ContentType ?? "application/octet-stream",
+            Size = file.Length,
+            StoragePath = storagePath,
             UploadedAt = DateTime.UtcNow
         };
         _db.Documents.Add(entity);
@@ -58,8 +83,25 @@ public class DocumentsController : ControllerBase
     {
         var existing = await _db.Documents.FindAsync(id);
         if (existing == null) return NotFound();
+        // delete file from storage too
+        var storage = HttpContext.RequestServices.GetRequiredService<Insurance.Api.Services.IStorageService>();
+        if (!string.IsNullOrWhiteSpace(existing.StoragePath))
+        {
+            await storage.DeleteFileAsync(existing.StoragePath);
+        }
         _db.Documents.Remove(existing);
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpGet("{id:guid}/download")]
+    public async Task<IActionResult> Download(Guid id)
+    {
+        var existing = await _db.Documents.FindAsync(id);
+        if (existing == null) return NotFound();
+        var storage = HttpContext.RequestServices.GetRequiredService<Insurance.Api.Services.IStorageService>();
+        var stream = await storage.GetFileAsync(existing.StoragePath);
+        if (stream == null) return NotFound();
+        return File(stream, existing.ContentType, existing.FileName);
     }
 }

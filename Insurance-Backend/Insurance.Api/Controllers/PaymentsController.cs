@@ -35,6 +35,13 @@ public class PaymentsController : ControllerBase
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Agent")]
     public async Task<IActionResult> Create([FromBody] Insurance.Api.DTOs.CreatePaymentDto dto)
     {
+        // business validations
+        var policy = await _db.Policies.FindAsync(dto.PolicyId);
+        if (policy == null) return BadRequest("Policy not found");
+        if (policy.CustomerId != dto.CustomerId) return BadRequest("Policy does not belong to the specified customer");
+        var now = DateTime.UtcNow.Date;
+        if (policy.StartDate > now || policy.EndDate < now) return BadRequest("Policy is not active");
+
         var entity = new Insurance.Core.Entities.Payment
         {
             Id = Guid.NewGuid(),
@@ -47,7 +54,12 @@ public class PaymentsController : ControllerBase
         };
         _db.Payments.Add(entity);
         await _db.SaveChangesAsync();
-        var result = new Insurance.Api.DTOs.PaymentDto(entity.Id, entity.PolicyId, entity.CustomerId, entity.Amount, entity.PaidAt, entity.Method, entity.Reference);
+
+        // process through payment gateway (mock)
+        var gateway = HttpContext.RequestServices.GetRequiredService<Insurance.Api.Services.IPaymentGateway>();
+        var paymentResult = await gateway.ProcessPaymentAsync(entity.Id, entity.Amount, entity.Method, entity.Reference ?? string.Empty);
+        // in a real system we'd update payment status. For now we log and return gateway transaction id
+        var result = new Insurance.Api.DTOs.PaymentDto(entity.Id, entity.PolicyId, entity.CustomerId, entity.Amount, entity.PaidAt, entity.Method, paymentResult.TransactionId);
         return CreatedAtAction(nameof(Get), new { id = entity.Id }, result);
     }
 
