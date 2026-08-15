@@ -8,8 +8,12 @@ public class AuthService : IUserService
 {
     private readonly List<UserInfo> _users = new()
     {
+        // Admin user (full privileges)
         new UserInfo(Guid.Parse("00000000-0000-0000-0000-000000000001"), "admin", new[] { "Admin" }, "admin@example.com"),
-        new UserInfo(Guid.Parse("00000000-0000-0000-0000-000000000002"), "user", new[] { "User" }, "user@example.com")
+        // Customer user (can file/view own claims; limited in this sample)
+        new UserInfo(Guid.Parse("00000000-0000-0000-0000-000000000002"), "customer", new[] { "Customer" }, "customer@example.com"),
+        // Agent user (can manage policies/claims)
+        new UserInfo(Guid.Parse("00000000-0000-0000-0000-000000000003"), "agent", new[] { "Agent" }, "agent@example.com")
     };
 
     public Task<UserInfo?> ValidateCredentialsAsync(string username, string password)

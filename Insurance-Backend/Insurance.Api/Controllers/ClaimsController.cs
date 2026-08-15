@@ -7,6 +7,7 @@ namespace Insurance.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class ClaimsController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
@@ -37,6 +38,7 @@ public class ClaimsController : ControllerBase
     }
 
     [HttpPost]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Agent,Customer")]
     public async Task<IActionResult> Create([FromBody] Insurance.Api.DTOs.CreateClaimDto dto)
     {
         var entity = new Claim
@@ -56,6 +58,7 @@ public class ClaimsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Agent")]
     public async Task<IActionResult> Update(Guid id, [FromBody] Insurance.Api.DTOs.UpdateClaimDto dto)
     {
         var existing = await _db.Claims.FindAsync(id);
@@ -69,6 +72,7 @@ public class ClaimsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var existing = await _db.Claims.FindAsync(id);

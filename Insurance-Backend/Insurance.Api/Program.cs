@@ -48,6 +48,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("AgentOrAdmin", policy => policy.RequireRole("Agent","Admin"));
+    options.AddPolicy("CustomerOrAgentOrAdmin", policy => policy.RequireRole("Customer","Agent","Admin"));
 });
 
 // Add services to the container.

@@ -7,6 +7,7 @@ namespace Insurance.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class PoliciesController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
@@ -37,6 +38,7 @@ public class PoliciesController : ControllerBase
     }
 
     [HttpPost]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Agent")]
     public async Task<IActionResult> Create([FromBody] Insurance.Api.DTOs.CreatePolicyDto dto)
     {
         var entity = new Policy
@@ -56,6 +58,7 @@ public class PoliciesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Agent")]
     public async Task<IActionResult> Update(Guid id, [FromBody] Insurance.Api.DTOs.UpdatePolicyDto dto)
     {
         var existing = await _db.Policies.FindAsync(id);
@@ -70,6 +73,7 @@ public class PoliciesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var existing = await _db.Policies.FindAsync(id);
