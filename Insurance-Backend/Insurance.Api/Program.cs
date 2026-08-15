@@ -81,7 +81,16 @@ using (var scope = app.Services.CreateScope())
     // Inline seed logic to avoid cross-project type resolution issues during build in this environment
     if (!await db.Customers.AnyAsync())
     {
-        var customer = new Insurance.Core.Entities.Customer { Id = Guid.NewGuid(), FirstName = "John", LastName = "Doe", Email = "john.doe@example.com", Phone = "+1-555-0100" };
+        // Add sample users to a lightweight in-memory users table if present
+        // (This repository uses a simple IUserService with hard-coded users for dev.)
+        var customer = new Insurance.Core.Entities.Customer 
+        { 
+            Id = Guid.NewGuid(), 
+            FirstName = "John", 
+            LastName = "Doe", 
+            Email = "john.doe@example.com", 
+            Phone = "+1-555-0100" 
+        };
         db.Customers.Add(customer);
 
         var policy = new Insurance.Core.Entities.Policy
