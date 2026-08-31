@@ -76,6 +76,43 @@ npx cypress run
 
 The repository includes a simple smoke test at `Insurance-Frontend/cypress/e2e/sample.spec.ts` that verifies the login page loads.
 
+### Cypress E2E tests (added)
+
+We've added a small suite of Cypress end-to-end tests under Insurance-Frontend/cypress/e2e:
+
+- login.spec.ts — verifies login flow
+- policies.spec.ts — verifies the policies list page
+- create-claim.spec.ts — simulates creating a claim
+
+To run them locally:
+
+1. Install dependencies:
+
+```bash
+cd Insurance-Frontend
+npm ci
+```
+
+2. Start the dev server in one terminal:
+
+```bash
+ng serve
+```
+
+3. Run Cypress in another terminal (interactive):
+
+```bash
+npx cypress open
+```
+
+Or headless (CI):
+
+```bash
+npx cypress run
+```
+
+Note: CI is configured to run Cypress with the GitHub Actions workflow at `.github/workflows/ci.yml`.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
