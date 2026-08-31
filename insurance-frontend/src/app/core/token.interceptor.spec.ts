@@ -21,7 +21,9 @@ describe('TokenInterceptor', () => {
       imports: [HttpClientTestingModule],
       providers: [
         { provide: AuthService, useValue: auth },
-        provideTokenInterceptor
+        // Register the interceptor using the real HTTP_INTERCEPTORS token so
+        // the Angular HTTP pipeline executes it during tests.
+        { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }
       ]
     });
 
