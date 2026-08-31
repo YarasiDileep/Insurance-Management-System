@@ -18,6 +18,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, insurance-frontend');
+    // The app title is 'Insurance Management' in the real app — assert accordingly
+    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, Insurance Management');
   });
 });
