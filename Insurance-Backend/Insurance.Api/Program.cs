@@ -87,6 +87,13 @@ app.UseSwaggerUI(c =>
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Allow CORS for frontend development (Angular dev server)
+app.UseCors(policy => policy
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials()
+    .SetIsOriginAllowed(origin => true));
+
 // Map controllers (attribute routed controllers)
 app.MapControllers();
 
