@@ -54,6 +54,28 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+This project uses Cypress for e2e testing. To run Cypress locally:
+
+1. Install dev dependencies:
+
+```bash
+npm install
+```
+
+2. Open Cypress Test Runner (interactive):
+
+```bash
+npx cypress open
+```
+
+3. Run Cypress headless (CI-friendly):
+
+```bash
+npx cypress run
+```
+
+The repository includes a simple smoke test at `Insurance-Frontend/cypress/e2e/sample.spec.ts` that verifies the login page loads.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
